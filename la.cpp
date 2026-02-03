@@ -1,5 +1,10 @@
-#include<bits/stdc++.h>
+#include<iostream>
+#include<vector>
+#include<cmath>
+#include<iomanip>
 using namespace std;
+
+constexpr float EPSILON = 1e-6; //tolerance for floating point comparisons
 
 //swaps rows x and y
 void row_op1(vector<vector<float>> &arr, vector<float> &rhs, int x, int y, int n)
@@ -77,43 +82,57 @@ int main()
                 cin >> rhs[i];
             }
 
-            //transforming into RREF form
+            //creating the leading ones
+            int last_leading1 = -1;
             for(int i = 0; i < min(m, n); i++)
             {
-                //checking diagonal elements to create a leading 1
-                if(abs(arr[i][i]) > 1e-6)
+                int flag = 0; //flag to check for a leading one appearance
+                for(int k = last_leading1 + 1; k < n; k++)
                 {
-                    row_op3(arr, rhs, i, n, (1 / arr[i][i]));
-                    for(int j = 0; j < m; j++)
-                    {
-                        if(j != i)
-                        {
-                            row_op2(arr, rhs, j, i, n, -arr[j][i]);
-                        }
-                    }
-                }
+                    //break if leading one already created
+                    if(flag == 1) break;
 
-                //if diagonal element is 0 then swap with another row where it is non-zero
-                else
-                {
-                    int flagz = 0;
-                    for(int j = (i + 1); j < m; j++)
+                    //checking elements to create a leading one and making all other column entries zero
+                    if(abs(arr[i][k]) > EPSILON)
                     {
-                        if(abs(arr[j][i]) > 1e-6)
-                        {
-                            row_op1(arr, rhs, i, j, n);
-                            flagz = 1;
-                            break;
-                        }
-                    }
-                    if(flagz == 1)
-                    {
-                        row_op3(arr, rhs, i, n, (1 / arr[i][i]));
+                        flag = 1;
+                        last_leading1 = k;
+                        row_op3(arr, rhs, i, n, (1 / arr[i][k]));
                         for(int j = 0; j < m; j++)
                         {
                             if(j != i)
                             {
-                                row_op2(arr, rhs, j, i, n, -arr[j][i]);
+                                row_op2(arr, rhs, j, i, n, -arr[j][k]);
+                            }
+                        }
+                        continue;
+                    }
+
+                    //if element is zero then swap with another row where it is non-zero
+                    //if no non-zero element in column there then continue loop to next column
+                    else
+                    {
+                        int leading1_found = 0; //leading1_found to check for a candidate in another row for a leading one
+                        for(int j = (i + 1); j < m; j++)
+                        {
+                            if(abs(arr[j][k]) > EPSILON)
+                            {
+                                row_op1(arr, rhs, i, j, n);
+                                leading1_found = 1;
+                                break;
+                            }
+                        }
+                        if(leading1_found == 1)
+                        {
+                            flag = 1;
+                            last_leading1 = k;
+                            row_op3(arr, rhs, i, n, (1 / arr[i][k]));
+                            for(int j = 0; j < m; j++)
+                            {
+                                if(j != i)
+                                {
+                                    row_op2(arr, rhs, j, i, n, -arr[j][k]);
+                                }
                             }
                         }
                     }
@@ -121,17 +140,17 @@ int main()
             }
             
             //checking if there is a zero row stuck in between and pull it down
-            int zeroflag1 = 0;
+            int zeroflag = 0; //flag to check if a row in the middle is zero
             for(int i = 0; i < m; i++)
             {
-                zeroflag1 = zero_check(arr, i, n);
-                if(zeroflag1 == 0)
+                zeroflag = zero_check(arr, i, n);
+                if(zeroflag == 0)
                 {
-                    int zeroflag2 = 0;
+                    int rowswap = 0; //flag to keep track of a candidate row for swapping with zero row
                     for(int j = m - 1; j > i; j--)
                     {
-                        zeroflag2 = zero_check(arr, j , n);
-                        if(zeroflag2 == 1)
+                        rowswap = zero_check(arr, j , n);
+                        if(rowswap == 1)
                         {
                             row_op1(arr, rhs, i, j, n);
                             break;
@@ -140,15 +159,15 @@ int main()
                 }
             }
 
-            //output in matrix form with precision upto 3 decimal places
+            //output in matrix form with precision upto three decimal places
             for(int i = 0; i < m; i++)
             {
                 for(int j = 0; j < n; j++)
                 {
-                    if(abs(arr[i][j]) > 1e-6) cout << floor(arr[i][j] * 1000) / 1000 << " ";
+                    if(abs(arr[i][j]) > EPSILON) cout << round(arr[i][j] * 1000.0f) / 1000.0f << " ";
                     else cout << "0 ";
                 }
-                cout << "| " << rhs[i] << "\n";
+                cout << "| " << round(rhs[i] * 1000.0f) / 1000.0f << "\n";
             }
         }
     }
