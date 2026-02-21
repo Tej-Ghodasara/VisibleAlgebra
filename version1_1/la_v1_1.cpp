@@ -6,8 +6,29 @@ using namespace std;
 
 constexpr float EPSILON = 1e-6; //tolerance for floating point comparisons
 
+//prints system with precision upto three decimal places
+void print_mat(vector<vector<float>> &arr, vector<float> &rhs)
+{
+    int m = arr.size();
+    int n = arr[0].size();
+    for(int i = 0; i < m; i++)
+    {
+        for(int j = 0; j < n; j++)
+        {
+            float val = arr[i][j];
+            if(abs(arr[i][j]) < EPSILON)  val = 0;
+            cout << left << setw(8) << round(val * 1000.0f) / 1000.0f;
+            // else cout << left << setw(8) << "0";
+        }
+        if(abs(rhs[i]) > EPSILON) cout << "| " << round(rhs[i] * 1000.0f) / 1000.0f << "\n";
+        else cout << "| 0\n";
+    }
+    cout << "\n";
+    return;
+}
+
 //swaps rows x and y
-void row_op1(vector<vector<float>> &arr, vector<float> &rhs, int x, int y, int n)
+void row_op1(vector<vector<float>> &arr, vector<float> &rhs, int x, int y, int n, char show_steps)
 {
     float temp;
     for(int i = 0; i < n; i++)
@@ -19,22 +40,25 @@ void row_op1(vector<vector<float>> &arr, vector<float> &rhs, int x, int y, int n
     temp = rhs[x];
     rhs[x] = rhs[y];
     rhs[y] = temp;
+    if(show_steps == 'y') print_mat(arr, rhs);
     return;
 }
 
 //row x becomes row x + k times row y
-void row_op2(vector<vector<float>> &arr, vector<float> &rhs, int x, int y, int n, float k)
+void row_op2(vector<vector<float>> &arr, vector<float> &rhs, int x, int y, int n, float k, char show_steps)
 {
     for(int i = 0; i < n; i++) arr[x][i] += k * arr[y][i];
     rhs[x] += k * rhs[y];
+    if(show_steps == 'y') print_mat(arr, rhs);
     return;
 }
 
 //row x becomes k times itself
-void row_op3(vector<vector<float>> &arr, vector<float> &rhs, int x, int n, float k)
+void row_op3(vector<vector<float>> &arr, vector<float> &rhs, int x, int n, float k, char show_steps)
 {
     for(int i = 0; i < n; i++) arr[x][i] *= k;
     rhs[x] *= k;
+    if(show_steps == 'y') print_mat(arr, rhs);
     return;
 }
 
@@ -58,10 +82,15 @@ int main()
     while(1)
     {
         int m, n;
-        cout << "Enter positive integers m and n for size of coefficient matrix\n";
-        cout << "Enter 0 0 if you want to terminate the program\n";
+        cout << "Enter positive integers m and n for size of coefficient matrix.\n";
+        cout << "Enter 0 0 if you want to terminate the program.\n";
         cin >> m >> n;
         if(m == 0 && n == 0) break;
+        char show_steps = 'n';
+        cout << "Enter the character 'y' if you wish to see the steps for\n";
+        cout << "RREF transformations. Enter 'n' otherwise.\n";
+        cin >> show_steps;
+        if(show_steps != 'y') show_steps = 'n';
         else if(m < 0 || n < 0) cout << "Enter valid input\n";
         else
         {
@@ -81,6 +110,7 @@ int main()
             {
                 cin >> rhs[i];
             }
+            cout << "\nSOLUTION :\n\n";
 
             //creating the leading ones
             int last_leading1 = -1;
@@ -97,12 +127,12 @@ int main()
                     {
                         flag = 1;
                         last_leading1 = k;
-                        row_op3(arr, rhs, i, n, (1 / arr[i][k]));
+                        row_op3(arr, rhs, i, n, (1 / arr[i][k]), show_steps);
                         for(int j = 0; j < m; j++)
                         {
-                            if(j != i)
+                            if(j != i && arr[j][k] > EPSILON)
                             {
-                                row_op2(arr, rhs, j, i, n, -arr[j][k]);
+                                row_op2(arr, rhs, j, i, n, -arr[j][k], show_steps);
                             }
                         }
                         continue;
@@ -117,7 +147,7 @@ int main()
                         {
                             if(abs(arr[j][k]) > EPSILON)
                             {
-                                row_op1(arr, rhs, i, j, n);
+                                row_op1(arr, rhs, i, j, n, show_steps);
                                 leading1_found = 1;
                                 break;
                             }
@@ -126,12 +156,12 @@ int main()
                         {
                             flag = 1;
                             last_leading1 = k;
-                            row_op3(arr, rhs, i, n, (1 / arr[i][k]));
+                            row_op3(arr, rhs, i, n, (1 / arr[i][k]), show_steps);
                             for(int j = 0; j < m; j++)
                             {
                                 if(j != i)
                                 {
-                                    row_op2(arr, rhs, j, i, n, -arr[j][k]);
+                                    row_op2(arr, rhs, j, i, n, -arr[j][k], show_steps);
                                 }
                             }
                         }
@@ -152,23 +182,14 @@ int main()
                         rowswap = zero_check(arr, j , n);
                         if(rowswap == 1)
                         {
-                            row_op1(arr, rhs, i, j, n);
+                            row_op1(arr, rhs, i, j, n, show_steps);
                             break;
                         }
                     }
                 }
             }
 
-            //output in matrix form with precision upto three decimal places
-            for(int i = 0; i < m; i++)
-            {
-                for(int j = 0; j < n; j++)
-                {
-                    if(abs(arr[i][j]) > EPSILON) cout << round(arr[i][j] * 1000.0f) / 1000.0f << " ";
-                    else cout << "0 ";
-                }
-                cout << "| " << round(rhs[i] * 1000.0f) / 1000.0f << "\n";
-            }
+            if(show_steps != 'y') print_mat(arr, rhs);
         }
     }
     return 0;
