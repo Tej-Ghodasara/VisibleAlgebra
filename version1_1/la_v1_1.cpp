@@ -130,7 +130,7 @@ int main()
                         row_op3(arr, rhs, i, n, (1 / arr[i][k]), show_steps);
                         for(int j = 0; j < m; j++)
                         {
-                            if(j != i && arr[j][k] > EPSILON)
+                            if(j != i && abs(arr[j][k]) > EPSILON)
                             {
                                 row_op2(arr, rhs, j, i, n, -arr[j][k], show_steps);
                             }
