@@ -2,6 +2,7 @@
 #include<vector>
 #include<cmath>
 #include<iomanip>
+#include<utility>
 using namespace std;
 
 constexpr float EPSILON = 1e-6; //tolerance for floating point comparisons
@@ -16,9 +17,8 @@ void print_mat(vector<vector<float>> &arr, vector<float> &rhs)
         for(int j = 0; j < n; j++)
         {
             float val = arr[i][j];
-            if(abs(arr[i][j]) < EPSILON)  val = 0;
+            if(abs(val) < EPSILON)  val = 0;
             cout << left << setw(8) << round(val * 1000.0f) / 1000.0f;
-            // else cout << left << setw(8) << "0";
         }
         if(abs(rhs[i]) > EPSILON) cout << "| " << round(rhs[i] * 1000.0f) / 1000.0f << "\n";
         else cout << "| 0\n";
@@ -31,15 +31,8 @@ void print_mat(vector<vector<float>> &arr, vector<float> &rhs)
 void row_op1(vector<vector<float>> &arr, vector<float> &rhs, int x, int y, int n, char show_steps)
 {
     float temp;
-    for(int i = 0; i < n; i++)
-    {
-        temp = arr[x][i];
-        arr[x][i] = arr[y][i];
-        arr[y][i] = temp;
-    }
-    temp = rhs[x];
-    rhs[x] = rhs[y];
-    rhs[y] = temp;
+    swap(arr[x], arr[y]);
+    swap(rhs[x], rhs[y]);
     if(show_steps == 'y') print_mat(arr, rhs);
     return;
 }
@@ -56,7 +49,7 @@ void row_op2(vector<vector<float>> &arr, vector<float> &rhs, int x, int y, int n
 //row x becomes k times itself
 void row_op3(vector<vector<float>> &arr, vector<float> &rhs, int x, int n, float k, char show_steps)
 {
-    for(int i = 0; i < n; i++) arr[x][i] *= k;
+    for(auto &elem : arr[x]) elem *= k;
     rhs[x] *= k;
     if(show_steps == 'y') print_mat(arr, rhs);
     return;
@@ -65,16 +58,8 @@ void row_op3(vector<vector<float>> &arr, vector<float> &rhs, int x, int n, float
 //returns 0 if row x is zero and 1 otherwise
 int zero_check(vector<vector<float>> &arr, int x, int n)
 {
-    int flag = 0;
-    for(int i = 0; i < n; i++)
-    {
-        if(arr[x][i] != 0)
-        {
-            flag = 1;
-            break;
-        }
-    }
-    return flag;
+    for(const auto &elem : arr[x]) if(elem != 0) return 1;
+    return 0;
 }
 
 int main()
@@ -86,30 +71,22 @@ int main()
         cout << "Enter 0 0 if you want to terminate the program.\n";
         cin >> m >> n;
         if(m == 0 && n == 0) break;
-        char show_steps = 'n';
-        cout << "Enter the character 'y' if you wish to see the steps for\n";
-        cout << "RREF transformations. Enter 'n' otherwise.\n";
-        cin >> show_steps;
-        if(show_steps != 'y') show_steps = 'n';
-        else if(m < 0 || n < 0) cout << "Enter valid input\n";
+        if(m <= 0 || n <= 0) cout << "Enter valid input\n";
         else
         {
+            char show_steps = 'n';
+            cout << "Enter the character 'y' if you wish to see the steps for\n";
+            cout << "RREF transformations. Enter 'n' otherwise.\n";
+            cin >> show_steps;
+            if(show_steps != 'y') show_steps = 'n';
+
             //input in matrix form
             vector<vector<float>> arr(m, vector<float>(n));
             vector<float> rhs(m);
             cout << "Enter the coefficient matrix\n";
-            for(int i = 0; i < m; i++)
-            {
-                for(int j = 0; j < n; j++)
-                {
-                    cin >> arr[i][j];
-                }
-            }
+            for(int i = 0; i < m; i++) for(int j = 0; j < n; j++) cin >> arr[i][j];
             cout << "Enter the RHS of equations\n";
-            for(int i = 0; i < m; i++)
-            {
-                cin >> rhs[i];
-            }
+            for(int i = 0; i < m; i++) cin >> rhs[i];
             cout << "\nSOLUTION :\n\n";
 
             //creating the leading ones
@@ -127,7 +104,7 @@ int main()
                     {
                         flag = 1;
                         last_leading1 = k;
-                        row_op3(arr, rhs, i, n, (1 / arr[i][k]), show_steps);
+                        if(abs(arr[i][k] - 1.0f) > EPSILON) row_op3(arr, rhs, i, n, (1 / arr[i][k]), show_steps);
                         for(int j = 0; j < m; j++)
                         {
                             if(j != i && abs(arr[j][k]) > EPSILON)
@@ -189,7 +166,8 @@ int main()
                 }
             }
 
-            if(show_steps != 'y') print_mat(arr, rhs);
+            cout << "final RREF matrix :\n\n";
+            print_mat(arr, rhs);
         }
     }
     return 0;
