@@ -50,10 +50,13 @@ void print_mat(vector<vector<double>> &arr)
 //swaps rows x and y
 void row_op1(int &steps, string &soln, vector<vector<double>> &inv, vector<vector<double>> &arr, vector<double> &rhs, int x, int y, int n, char show_steps)
 {
-    cout << "STEP " << steps << " : Swap rows " << x << " and " << y << "\n\n";
     swap(arr[x], arr[y]);
     swap(rhs[x], rhs[y]);
-    if(show_steps == 'y') print_sys(arr, rhs);
+    if(show_steps == 'y')
+    {
+        cout << "STEP " << steps << " : Swap rows " << x + 1 << " and " << y + 1 << "\n\n";
+        print_sys(arr, rhs);
+    }
 
     if(soln == "inverse")
     {
@@ -68,13 +71,16 @@ void row_op1(int &steps, string &soln, vector<vector<double>> &inv, vector<vecto
 //row x becomes row x + k times row y
 void row_op2(int &steps, string &soln, vector<vector<double>> &inv, vector<vector<double>> &arr, vector<double> &rhs, int x, int y, int n, double k, char show_steps)
 {
-    cout << "STEP " << steps << " : Turn row " << x << " into row " << x << " + " << k << " times row " << y << "\n\n";
     for(int i = 0; i < n; i++)
     {
         arr[x][i] += k * arr[y][i];
     }
     rhs[x] += k * rhs[y];
-    if(show_steps == 'y') print_sys(arr, rhs);
+    if(show_steps == 'y')
+    {
+        cout << "STEP " << steps << " : Turn row " << x + 1 << " into row " << x + 1 << " + " << k << " times row " << y + 1 << "\n\n";
+        print_sys(arr, rhs);
+    }
 
     if(soln == "inverse")
     {
@@ -92,13 +98,16 @@ void row_op2(int &steps, string &soln, vector<vector<double>> &inv, vector<vecto
 //row x becomes k times itself
 void row_op3(int &steps, string &soln, vector<vector<double>> &inv, vector<vector<double>> &arr, vector<double> &rhs, int x, int n, double k, char show_steps)
 {
-    cout << "STEP " << steps << " : Multiply row " << x << " by " << k << "\n\n";
     for(auto &elem : arr[x])
     {
         elem *= k;
     }
     rhs[x] *= k;
-    if(show_steps == 'y') print_sys(arr, rhs);
+    if(show_steps == 'y')
+    {
+        cout << "STEP " << steps << " : Multiply row " << x + 1 << " by " << k << "\n\n";
+        print_sys(arr, rhs);
+    }
 
     if(soln == "inverse")
     {
